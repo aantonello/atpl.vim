@@ -91,7 +91,7 @@ directories the plugin will search for templates.
     let g:atpl_TemplatePath = '$VIM/atpl'
 
 That is the default configuration. You can use environment variables at your
-will. The expansion is make by the plugin as needed. You can customize that by
+will. The expansion is made by the plugin as needed. You can customize that by
 putting your own template directory in the list. Lets say:
 
     let g:atpl_TemplatePath .= ',$HOME/templates'
