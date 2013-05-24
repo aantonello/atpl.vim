@@ -1,0 +1,44 @@
+// vim:fdm=manual fmr=<<<,>>> ft=objc
+// Include the c snippet.
+// <{<snippets.c>}>
+
+/* <+viewDidLoad+> */
+/**
+ * Called after the controller’s view is loaded into memory.
+ *//* --------------------------------------------------------------------- */
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    <|>
+}
+/* <+viewDidLoad+> */
+
+/* <+viewDidUnload+> */
+/**
+ * Called when the controller’s view is released from memory.
+ *//* --------------------------------------------------------------------- */
+- (void)viewDidUnload {
+    [super viewDidUnload];
+    <|>
+}
+/* <+viewDidUnload+> */
+
+/* <+viewWillAppear+> */
+/**
+ * Notifies the view controller that its view is about to be become visible.
+ *//* --------------------------------------------------------------------- */
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    <|>
+}
+/* <+viewWillAppear+> */
+
+/* <+viewWillDisappear+> */
+/**
+ * Notifies the view controller that its view is about to be dismissed,
+ * covered, or otherwise hidden from view.0
+ *//* --------------------------------------------------------------------- */
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    <|>
+}
+/* <+viewWillDisappear+> */

@@ -1,0 +1,377 @@
+*apptpl.txt*    Apply Template Vim Plugin                         Jun 21, 2009
+*apptpl.vim*
+
+Author:     Alessandro Antonello    <antonello.ale@gmail.com>
+                                                              *apptpl-license*
+License:    This file and the companion script "apptpl.vim" lies in the public 
+            domain. There is no warranty of any kind.
+
+=======================================================================================
+1. Contents                                                  *apptpl-contents*
+
+            1. Contents.........................: |apptpl-contents|
+            2. Archive Content..................: |apptpl-archive|
+            3. Installing.......................: |apptpl-install|
+            4. Uninstalling.....................: |apptpl-uninstall|
+            5. Description......................: |apptpl-help|
+            6. Options..........................: |apptpl-options|
+            7. Usage............................: |apptpl-usage|
+
+==============================================================================
+2. Archive Content                                            *apptpl-archive*
+
+            In the ZIP archive your should get the file "apptpl.vba" and the 
+            directory "templates" with a list of example files. The 
+            "apptpl.vba" file is a |VimBall| file used to install and 
+            uninstall the script (see |apptpl-install| and 
+            |apptpl-uninstall|). The example files aren't installed. They are 
+            only for you to see how you can create and manage your own 
+            template files and snippets. After you get to know the way, you 
+            can safely remove the directory and files.
+
+==============================================================================
+3. Installing                                                 *apptpl-install*
+
+            Install the script should be a trival job. Just open the VBA file 
+            with vim. You don't even need to be in a $VIMRUNTIME directory. 
+            Just type: >
+
+            vim apptpl.vba
+
+<           And you should see the first lines of the archive and a bunch of 
+            folds. Now, in normal mode type: >
+
+            :so %
+<
+            And thats almost it. The plugin is installed but you should read 
+            the |apptpl-help| to get to know what you need to configure before 
+            you can use the plugin.
+
+==============================================================================
+4. Uninstalling                                             *apptpl-uninstall*
+
+            As of the installation process the uninstallation is very easy. 
+            Inside of VIM you type: >
+
+            :RmVimball apptpl.vba
+<
+            Thats done. The plugin is uninstalled. Of course you need to 
+            remove all directory and files that you have created with the 
+            templates and snippets. The uninstall process will not remove 
+            these by it self.
+
+==============================================================================
+5. Description                                                   *apptpl-help*
+
+            This is a simple script to load and apply some templates for your 
+            most common usage. I did it because I could not find a script as 
+            simple as this one that could do both things: Be a template finder 
+            and code snippets helper. And, most important, flexible.
+
+            With this script you can have global templates, personal templates 
+            and project templates at the same time. All in different places in 
+            your machine. In the code snippets area you can have some for 
+            generic usage and others for usage only for certain file types.
+
+            There are a set of default constants that the plugin already set. 
+            But you can define your own set of constants to be replaced in the 
+            templates. All this you can learn in the |apptpl-usage| area.
+
+            First things first. You need a small configuration in your 
+            "vimrc" file for start using the plugin. Of course you will need 
+            to create some templates too. You can change some from the 
+            "examples" directory in the ZIP archive.
+
+            First you need to define where the template files and snippets 
+            are. You do this setting the 'g:atpl_TemplatePath' option. This 
+            is a comma separated list of paths, like the 'runtimepath' option.
+
+            Example: >
+
+            let g:atpl_TemplatePath = '$HOME/.vim/templates'
+<
+            If you want a map to use the snippets, like pressing 
+            <Leader>"something" to do the work, you will need to define the 
+            map with the option 'g:atpl_SnippetMap'.
+
+            Example: >
+
+            let g:atpl_SnippetMap = '<Leader>s'
+<
+            With this, the plugin will set the sequence "\s" to load the 
+            snippet which its name is under the cursor.
+
+==============================================================================
+6. Options                                                    *apptpl-options*
+
+                                                             *g:loaded_apptpl*
+g:loaded_apptpl ~
+            Setting this will prevent the plugin to be sourced. The first 
+            lines of the plugin have the following code: >
+
+            if exists('g:loaded_apptpl')
+              finish
+            endif
+<
+            So, If the plugin is causing any trouble you can disable it easily 
+            just setting this in your "vimrc" file: >
+
+            let g:loaded_apptpl = 1
+<
+
+                                                         *g:atpl_TemplatePath*
+g:atpl_TemplatePath ~
+            A comma separated list of paths. This defines where the plugin 
+            will look for template files and snippets files. The search in the 
+            paths listed in this option is done using |globpath()|. So, the 
+            rules of that function applies. The script will use the first 
+            match found.
+
+            Example: >
+
+            let g:atpl_TemplatePath = '$VIM/vimfiles/templates,$HOME/apptpl'
+<
+            When used with template files the search starts with the first 
+            path in the option. When used with snippets the last path is 
+            searched first. This is because the script uses a single file for 
+            all snippets intended for a given file type. So is more common to 
+            have more than one snippet with the same name for differents 
+            users.
+
+            If you have a global "vimrc" file where this options is set as 
+            above. >
+
+            let g:atpl_TemplatePath = '$VIM/vimfiles/templates'
+<
+            And you have your own set of snippets in your personal "vimrc" 
+            configuration. >
+
+            let g:atpl_TemplatePath = g:atpl_TemplatePath . ',$HOME/atpl'
+<
+            The script will search in the "$HOME/atpl" directory first, and 
+            then in the "$VIM/vimfiles/templates" directory. This allow you to 
+            have a "for" snippet named in your own directory that will 
+            overrule a possible "for" snippet in the VIM directory.
+
+                                                           *g:atpl_SnippetMap*
+g:atpl_SnippetMap ~
+            Sets the mapping for using with snippets only. For use with file 
+            templates the command |:Template| is provided.
+
+            This can be set to a key sequence to be typed when one code 
+            snippet should be loaded. For example, if we set this option with 
+            the following in your "vimrc": >
+
+            let g:atpl_SnippetMap = '<C-S>'
+<
+            Then you could type "for<C-S>" in a buffer and have the code 
+            snippet for a "for loop" placed at the cursor location. The "for" 
+            word it self is replaced by the content of the snippet. If there 
+            is something before or after it is kept unchanged. The mapping is 
+            done only for Insert mode (|imap|) and Normal mode (|nmap|).
+
+            If a mapping is not provided there is no default. That is, no 
+            mapping will be available for use. You can still load snippets 
+            with the command |:Apply|.
+
+                                                            *g:atpl_UsersList*
+g:atpl_UsersList ~
+            A dictionary (see |Dictionary|) with your own list of macros with 
+            replacement values. For example, suppose you have a template file 
+            with the following line: >
+
+            Maintainer: <{$USERNAME$}>
+<
+            Then this option can be set with the following value: >
+
+            let g:atpl_UsersList['$USERNAME$'] = "John Doe"
+<
+            And the plugin will replace the macro "<{$USERNAME$}>" with the 
+            word "John Doe" when loading this template. As the replacement 
+            is done like any other default value, you can use a function in 
+            place of the name. >
+
+            let g:atpl_UsersList['$CURRDATE$'] = "strftime('%c')"
+<
+            The plugin will use the |eval()| function to evaluate the value 
+            for that macro.
+
+            The user list has precedence over all others lists. That means you 
+            can override the default plugin list of values which wathever you 
+            want.
+
+==============================================================================
+7. Usage                                                        *apptpl-usage*
+
+                                                                   *:Template*
+            The usage is simple. Suppose you create a new file on VIM and you 
+            want to apply a template named 'def_header.h'. You go to the 
+            command window and type: >
+
+            :Template def_header.h
+<
+            The script will search all directories defined in the 
+            |g:atpl_TempatePath| option to find a file named "def_header.h". 
+            All macros will be searched, values replaced, and the result value 
+            will be put starting at the cursor position.
+
+                                                                      *:Apply*
+            If you want to apply a code snippet, you can do the same thing, 
+            using the command ":Apply". >
+
+            :Apply if
+<
+            This will search all snippet files to find a snippet named "if". 
+            When found, the snippet will be processed just like a template 
+            file. That is, all macro variables will be replaced, and the 
+            result code will be put starting at the cursor position.
+
+            If you setted a key mapping with |g:atpl_SnippetMap| option you 
+            can type "if" directly in your buffer and the map you defined. 
+            Giving the same result. For example, suppose you defined the 
+            sequence <C-S> in 'g:atpl_SnippetMap' option. Typing: >
+
+            if<C-S>
+<
+            Will do the same thing as typing ':Apply if' in the command 
+            window.
+
+==============================================================================
+8. Templates                                                *apptpl-templates*
+
+            You can see in the "examples" folder some templates and snippets 
+            examples. They have the default list of macros variables and some 
+            'in place' substitutions.
+
+                                                               *apptpl-macros*
+            A macro must be started with "<{" sequence and ended with "}>" 
+            sequence. Inside of it you can have a "substitution" variable or a 
+            "in place" substitution.
+
+            A substitution variable is just a name that will be replaced by 
+            the script when the template is processed. Thus, it must have the 
+            form "$VARIABLE$". Example: >
+
+            /*
+             * file: <{$FILENAME$}>
+             */
+<
+            When this template is loaded the macro "<{$FILENAME$}>" will be 
+            replaced with the name of the file. Note that the current buffer 
+            "must" have a name. Otherwise the script will replace the variable 
+            with an empty string. Check the |apptpl-default-macros| for a list 
+            of default macros.
+
+                                                                 *apptpl-eval*
+            An "in place" macro is one that doesn't have a variable name. 
+            Instead it has an evaluation expression that the script will 
+            execute in place. See |eval| for help with VIM expressions.
+
+            An evaluation expression has the form: >
+
+            <{#strftime('%c')#}>
+<
+            Notice that the start and end sequence are the same ("<{" and 
+            "}>"). Instead of enclose the expression with "$" signs it is 
+            enclosed in "#" signs. This tells the script that the content of 
+            this macro is not to be searched in one of the groups of variables 
+            to found a match. This macro is evaluated imediatly.
+
+            Note that white spaces in the macro expression are avaluated "as 
+            is". That means white spaces are relevant where they sould be.
+
+            What out with clever expressions in this fashion. The script will 
+            evaluate it before writting the current buffer so, you cannot move 
+            to another buffer or close the current file. Also, expressions 
+            that will create a lot of lines of code may cause the script to 
+            report some exceptions.
+
+==============================================================================
+9. Default Macros                                      *apptpl-default-macros*
+
+            This is a list of default macros defined inside the script. They 
+            can be used anywhere inside a template or snippet.
+
+                                                                  *$FILENAME$*
+$FILENAME$  ~
+            The result is an expression "expand('%:t')" (see |expand()|) that 
+            will be evaluated to the name of the current buffer file.
+
+                                                                  *$BASENAME$*
+$BASENAME$  ~
+            The result is an expression "expand('%:t:r')" (see |expand()|) 
+            that will be evaluated to the root fo the current buffer file 
+            (this will exclude the extension).
+
+                                                                 *$UFILENAME$*
+$UFILENAME$ ~
+            Like the |$FILENAME$| variable but in upper case.
+
+                                                                 *$UBASENAME$*
+$UBASENAME$ ~
+            Like the |$BASENAME$| variable but in upper case.
+
+                                                                 *$LFILENAME$*
+$LFILENAME$ ~
+            Like the |$FILENAME$| variable but in lower case.
+
+                                                                 *$LBASENAME$*
+$LBASENAME$ ~
+            Like the |$BASENAME$| variable but in lower case.
+
+                                                                  *$DATETIME$*
+$DATETIME$  ~
+            The result is an expression ("strftime('%c')") that will be 
+            evaluated to the current date and time of the day. See 
+            |strftime()|.
+            
+                                                                  *$LONGDATE$*
+$LONGDATE$  ~
+            The result is an expression ("strftime('%Y %B %d')") that will be 
+            evaluated to the current date. See |strftime()|.
+            
+                                                                 *$SHORTDATE$*
+$SHORTDATE$ ~
+            The result is an expression ("strftime('%Y-%m-%d')") that will be 
+            evaluated to the current date. See |strftime()|.
+            
+                                                                  *$LONGTIME$*
+$LONGTIME$  ~
+            The result is an expression ("strftime('%H:%M:%S')") that will be 
+            evaluated to the current time of the day. See 
+            |strftime()|.
+            
+                                                                 *$SHORTTIME$*
+$SHORTTIME$ ~
+            The result is an expression ("strftime('%H:%M')") that will be 
+            evaluated to the current time of the day. See 
+            |strftime()|.
+            
+                                                          *apptpl-user-macros*
+User Macros ~
+            All these variables can be overriden by one with the same name at 
+            the global option |g:atpl_UsersList|. Example: >
+
+            let g:atpl_UsersList["$LONGDATE$"] = "strftime('%B %d, %Y')"
+<
+            There is no need to declare all variables in uppercase. But the 
+            script search is case sensitive. So "$LONGDATE$" and "$LongDate$" 
+            are two different variables names.
+
+            If the script found a variable that isn't in any list it will ask 
+            you about the value. In the command window, the following text 
+            will appear:    >
+
+            Type the value for variable 'NAME':
+<
+            Where "NAME" will be replaced with the name of the variable that 
+            it doesn't found.
+
+==============================================================================
+                                                              *apptpl-changes*
+Changes ~
+
+            Jun 21, 2009
+            - First release.
+
+vim:tw=78:ts=4:sw=4:ft=help:
