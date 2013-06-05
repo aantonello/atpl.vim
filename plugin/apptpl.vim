@@ -23,8 +23,8 @@ let s:saved_cpo = &cpo
 set cpo&vim
 
 " Global variables {{{1
-if !exists('g:atpl_UserList')
-  let g:atpl_UserList = {}
+if !exists('g:atpl_UsersList')
+  let g:atpl_UsersList = {}
 endif
 " g:atpl_TemplatePath: List of paths to find templates.
 " g:atpl_SnippetMap: Map to use for apply snippets.
@@ -253,6 +253,23 @@ func s:LoadFile(fname)
 
   if empty(l:fileData)
     return []
+  endif
+
+  " Well, I work in two different environments. One is a Windows XP box with
+  " defaults to latin1 character set. The other is a Mac OSX 10.8 with
+  " defaults to UTF-8 character set. To make snippets and templates working
+  " the same way in both environments, all files must be written using UTF-8
+  " character set. So, the script will check the "fenc" buffer variable,
+  " changing the character set of the file if needed.
+  if has("multi_byte")
+    let l:fenc = getbufvar("%", "&fenc")
+    if l:fenc != "" && l:fenc !=? "utf-8"
+      let l:idx = 0
+      while l:idx < len(l:fileData)
+        let l:fileData[l:idx] = iconv(l:fileData[l:idx], "utf-8", l:fenc)
+        let l:idx = l:idx + 1
+      endwhile
+    endif
   endif
 
   " Check if there is any 'include' statement into the file data.

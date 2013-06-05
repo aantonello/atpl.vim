@@ -4,10 +4,10 @@ atpl.vim
 Version 1.0
 -----------
 
-**atpl** (former *apptpl* from Apply Template), is a simple script to load and
-apply file templates and simple snippets in the current buffer. Its intention
-is not build a complete snippet system. For that kind of plugin you can use
-[snipMate](https://github.com/msanders/snipmate.vim) or
+**atpl** (formely *apptpl* from Apply Template), is a simple script to load
+and apply file templates and simple snippets in the current buffer. Its
+intention is not build a complete snippet system. For that kind of plugin you
+can use [snipMate](https://github.com/msanders/snipmate.vim) or
 [UltiSnips](https://github.com/vim-scripts/UltiSnips). They are much more
 powerful in this area. The **atpl** plugin is more useful for applying file
 templates that are almost ready to go, configured by a set of pre-defined
@@ -19,11 +19,11 @@ A little example of a `C` source file header in Doxygen style:
      * \file
      * <|>
      *
-     * \author  <{@AUTHOR@}> <{@AUTHORMAIL@}>
+     * \author  <{$AUTHOR$}> <{$AUTHORMAIL$}>
      * \date    <{$LOCALDATE$}>
-     * \since   <{@PROJECT@}> <{@VERSION@}>
+     * \since   <{$PROJECT$}> <{$VERSION$}>
      *
-     * \copyright <{@OWNER@}>, <{$YEAR$}>. All rights reserved.
+     * \copyright <{$OWNER$}>, <{$YEAR$}>. All rights reserved.
      */
 
 You write this template in a file called `c_header.c` in one directory
@@ -34,7 +34,7 @@ searched by the plugin (I will walk through this later). Then you open a new
 
 When the plugin starts working it will ask you about the variable values that
 you put in the template. For our example, it will ask for the values of
-`@AUTHOR@`, `@AUTHORMAIL@`, `@PROJECT@`, `@VERSION@` and `@OWNER@`.  The
+`$AUTHOR$`, `$AUTHORMAIL$`, `$PROJECT$`, `$VERSION$` and `$OWNER$`.  The
 others values, like `$LOCALDATE$` and `$YEAR$` are pre-defined constants that
 evaluate to VimL functions that write (guess) the local date and year. When
 the plugin finishes parsing the file it will look for the `<|>` macro and
@@ -44,14 +44,14 @@ So, every time we use the `:Template` command it will ask us for that variable
 values. But, we can make this easier if we pre-define that variables. To make
 this, we use a global list that the plugin provide, in this way:
 
-    let g:atpl_UsersList['@AUTHOR@'] = 'Author Name'
-    let g:atpl_UsersList['@AUTHORMAIL@'] = '<name at domain dot com>'
-    let g:atpl_UsersList['@PROJECT@'] = 'Project Name'
-    let g:atpl_UsersList['@VERSION@'] = '1.0'
-    let g:aptl_UsersList['@OWNER@'] = 'Company Name'
+    let g:atpl_UsersList['$AUTHOR$'] = 'Author Name'
+    let g:atpl_UsersList['$AUTHORMAIL$'] = '<name at domain dot com>'
+    let g:atpl_UsersList['$PROJECT$'] = 'Project Name'
+    let g:atpl_UsersList['$VERSION$'] = '1.0'
+    let g:aptl_UsersList['$OWNER$'] = 'Company Name'
 
 For now on, when we call the template, the plugin will replace all variables
-with the pre-defined values. Personally I put `@AUTHOR@` and `@AUTHORMAIL@` in
+with the pre-defined values. Personally I put `$AUTHOR$` and `$AUTHORMAIL$` in
 my `.vimrc` file. The others variables I put in scripts loaded for the project
 that I am working on.
 
@@ -108,6 +108,9 @@ mappings.
 History
 -------
 
+* **Jun 5, 2013**: Changes in documentation.
+  Typo in internal variables.
+  Added support for different character codes.
 * **May 24, 2013**: First release.
 
 TODO
@@ -118,4 +121,5 @@ TODO
 * Better completion list when `<C-D>` is pressed after the `:Template`
   command.
 * Improve documentation.
+* Include conditional expansion of template pieces.
 
