@@ -22,6 +22,7 @@ License:    This file and the companion script "apptpl.vim" lies in the public
                 8.3 Snippets....................: |apptpl-snippets|
                 8.4 Includes....................: |apptpl-includes|
             9. Default Macros...................: |apptpl-default-macros|
+           10. ChangeLog........................: |apptpl-changes|
 
 ==============================================================================
 2. Installing                                                 *apptpl-install*
@@ -394,6 +395,10 @@ g:atpl_UsersList ~
             is, in one directory defined in the |g:atpl_TemplatePath|
             variable.
 
+            Note: All snippets and template files should be written using
+            UTF-8. The plugin expects that, and converts the encoding
+            accordingly when needed.
+
 ==============================================================================
 9. Default Macros                                      *apptpl-default-macros*
 
@@ -483,5 +488,8 @@ Changes ~
             Jun 5, 2013
             - Including support for others character sets.
             - Changes in the documentation.
+
+            Aut 25, 2013
+            - Changed the way the conversion of character sets is done.
 
 vim:tw=78:ts=4:sw=4:ft=help:fo=tcroq:ai:

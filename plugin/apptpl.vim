@@ -103,7 +103,13 @@ func s:AtplLoadTemplate(name)
   let line_cn = len(flist)
 
   " In the current line of the buffer we will write the new code.
-  call setline(".", flist)
+  " In the current line we write the first line of the template.
+  call setline(line_no, flist[0])
+
+  " The other lines are appended. That way we don't replace any already wrote
+  " text in the buffer.
+  call remove(flist, 0)
+  call append(line_no, flist)
   
   " Sets the cursor position
   call s:SetCursorPos(line_no, (line_no + line_cn))
@@ -255,15 +261,10 @@ func s:LoadFile(fname)
     return []
   endif
 
-  " Well, I work in two different environments. One is a Windows XP box with
-  " defaults to latin1 character set. The other is a Mac OSX 10.8 with
-  " defaults to UTF-8 character set. To make snippets and templates working
-  " the same way in both environments, all files must be written using UTF-8
-  " character set. So, the script will check the "fenc" buffer variable,
-  " changing the character set of the file if needed.
+  " Converting the source template data encoding, if needed.
   if has("multi_byte")
     let l:fenc = getbufvar("%", "&fenc")
-    if l:fenc != "" && l:fenc !=? "utf-8"
+    if l:fenc != "" && l:fenc !=? "utf-8" && &encoding !=? "utf-8"
       let l:idx = 0
       while l:idx < len(l:fileData)
         let l:fileData[l:idx] = iconv(l:fileData[l:idx], "utf-8", l:fenc)
