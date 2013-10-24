@@ -96,6 +96,10 @@ func s:AtplLoadTemplate(name)
   " The s:atpl_LoadedList can be removed after s:LoadFile() ends.
   unlet s:atpl_LoadedList
 
+  " Before evaluating the user input we need to convert the template encoding
+  " to match the one used in the current buffer.
+  let flist = s:ConvertEncoding(flist)
+
   " Process the file doing any substitution required.
   call s:ProcessTemplate(flist)
 
@@ -134,11 +138,11 @@ func s:AtplApplySnippet(name)
   " Find and load the snippet code.
   let scode = s:LoadSnippetCode(a:name)
   if empty(scode)
-    call s:ShowMsg('error', "Snippet named '".a:name."' not found!")
     return
   endif
 
-  " Process the snippet code.
+  " Process the snippet code. Note: the 's:LoadSnippetCode()' already
+  " converted the character encoding of the snippet code.
   call s:ProcessTemplate( scode )
 
   " Insert the snippet code in the buffer at current line.
@@ -191,9 +195,32 @@ func s:ShowMsg(type, msg)
   elseif a:type ==? 'question'
     echohl Question
   endif
-  echo a:msg
+  echomsg a:msg
   echohl None
 endfunc
+
+" s:ConvertEncoding(list) {{{2
+" Converts the encoding of a list of lines to the one used in the current
+" buffer.
+" @param list The list of lines of strings to convert.
+" @return The same list, with character encoding converted, if needed.
+" ============================================================================
+fun s:ConvertEncoding(list)
+
+  if has("multi_byte")
+    let l:fenc = getbufvar("%", "&fenc")
+    if l:fenc != "" && l:fenc !=? "utf-8" && &encoding !=? "utf-8"
+      let l:idx = 0
+      while l:idx < len(a:list)
+        let a:list[l:idx] = iconv(a:list[l:idx], "utf-8", l:fenc)
+        let l:idx = l:idx + 1
+      endwhile
+    endif
+  endif
+
+  return a:list
+
+endfun
 
 " s:IsFileLoaded(fname) {{{2
 " Checks if a template or snippet file was already loaded.
@@ -220,14 +247,13 @@ func s:IsFileLoaded(fname)
 
 endfunc
 
-" s:LoadFile(fname) {{{2
-" Loads the template file and put it in a memory list.
-" @param fname Name of the file to load.
-" @return A List with the file content or an empty list, if the file is not 
-" found.
-" =============================================================================
-func s:LoadFile(fname)
-
+" s:LoadFileGetList(fname) {{{2
+" Loads all files with the name requested returning a list.
+" @param fname Name of the file to match.
+" @return A list with all files found in the directories list defined in the
+" global variable 'g:atpl_TemplatePath'.
+" ============================================================================
+fun s:LoadFileGetList(fname)
   let l:fileName = a:fname
 
   " Use globpath() to search the file in all defined directories.
@@ -238,7 +264,24 @@ func s:LoadFile(fname)
 
   " The result of globpath() is a string separated by new lines. Convert it to
   " a list that will be searched in reverse order.
-  let l:pathList = split(l:searchPath, "\n")
+  return split(l:searchPath, "\n")
+endfun
+
+" s:LoadFile(fname) {{{2
+" Loads the template file and put it in a memory list.
+" @param fname Name of the file to load.
+" @return A List with the file content or an empty list, if the file is not 
+" found.
+" =============================================================================
+func s:LoadFile(fname)
+
+  " Loads the list of found files.
+  let l:pathList = s:LoadFileGetList(a:fname)
+
+  if (len(l:pathList) == 0)
+    return []
+  endif
+
   let l:pathSize = len(l:pathList) - 1
   let l:fileData = []
 
@@ -259,18 +302,6 @@ func s:LoadFile(fname)
 
   if empty(l:fileData)
     return []
-  endif
-
-  " Converting the source template data encoding, if needed.
-  if has("multi_byte")
-    let l:fenc = getbufvar("%", "&fenc")
-    if l:fenc != "" && l:fenc !=? "utf-8" && &encoding !=? "utf-8"
-      let l:idx = 0
-      while l:idx < len(l:fileData)
-        let l:fileData[l:idx] = iconv(l:fileData[l:idx], "utf-8", l:fenc)
-        let l:idx = l:idx + 1
-      endwhile
-    endif
   endif
 
   " Check if there is any 'include' statement into the file data.
@@ -353,6 +384,7 @@ func s:ProcessIncludeMacro(list)
       if !empty(flist)
         let outlst += flist
       endif
+
     else
       call add(outlst, line)
     endif
@@ -497,23 +529,23 @@ func s:LoadSnippetCode(name)
   " First we try to find the snippet code in the 'snippets.tpl' file. This is
   " a global file where the user can put global snippets.
   let l:snippetCode = s:LookUpSnippet('snippets.tpl', a:name)
-  if !empty(l:snippetCode)
-    return l:snippetCode
+  if empty(l:snippetCode)
+    " Now we try to find a snippet based on the current file's extension.
+    let l:snippetCode = s:LookUpSnippet('snippets.'.fext, a:name)
+    if empty(l:snippetCode)
+      " By the last try we search for a snippet based on the current file type.
+      let l:snippetCode = s:LookUpSnippet('snippets.'.ftype, a:name)
+      if empty(l:snippetCode)
+        call s:ShowMsg('', 'No snippet with name "'.a:name.'" was found')
+        return []
+      endif
+
+    endif
   endif
 
-  " Now we try to find a snippet based on the current file's extension.
-  let l:snippetCode = s:LookUpSnippet('snippets.'.fext, a:name)
-  if !empty(l:snippetCode)
-    return l:snippetCode
-  endif
-
-  " By the last try we search for a snippet based on the current file type.
-  let l:snippetCode = s:LookUpSnippet('snippets.'.ftype, a:name)
-  if !empty(l:snippetCode)
-    return l:snippetCode
-  endif
-
-  return []
+  " Before return, we must check and convert the encoding of the snippet code
+  " if needed. All snippets must be provided in UTF-8.
+  return s:ConvertEncoding(l:snippetCode)
 
 endfunc
 
@@ -533,25 +565,41 @@ func s:LookUpSnippet(fname, sname)
   " be processed. Notice that the 's:atpl_LoadedList' must be created before
   " the function call.
   let s:atpl_LoadedList = []
-  let flist = s:LoadFile(a:fname)
+  let l:fileList = s:LoadFileGetList(a:fname)
+
+  if empty(l:fileList)
+    unlet s:atpl_LoadedList
+    return []
+  endif
+
+  let limit = len(l:fileList) - 1
+
+  " Search for the snippet on all files. The first one found will be used. In
+  " list reverse order.
+  while limit >= 0
+    let snippet = l:fileList[limit]
+    if filereadable(snippet) && !s:IsFileLoaded(snippet)
+      try
+
+        let l:fileData = readfile(snippet)
+        let l:fileData = s:ProcessIncludeMacro(l:fileData)
+        let indexStart = match(l:fileData, "<+".a:sname."+>")
+        if (indexStart >= 0)
+          let indexEnd = match(l:fileData, "<+".a:sname."+>", (indexStart+1))
+          return l:fileData[indexStart + 1:indexEnd - 1]
+        endif
+
+      catch
+        call s:ShowMsg('error', "' ". v:exception ." ' in point, ". v:throwpoint)
+        unlet s:atpl_LoadedList
+        return []
+      endtry
+    endif
+    let limit -= 1
+  endwhile
+
   unlet s:atpl_LoadedList
-
-  if empty(flist)
-    return []
-  endif
-
-  " Search for the snippet name. The name must be in a single line and 
-  " enclosed by '<+...+>' marks.
-  let idx_start = match(flist, "<+".a:sname."+>")
-  if idx_start < 0
-    return []
-  endif
-  
-  " Find the end of the snippet code.
-  let idx_stop = match(flist, "<+".a:sname."+>", (idx_start + 1))
-
-  " Return the sub-list containing only the snippet code.
-  return flist[idx_start+1:idx_stop-1]
+  return []
 
 endfunc
 

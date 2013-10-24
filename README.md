@@ -108,10 +108,12 @@ mappings.
 History
 -------
 
-* **Jun 5, 2013**: Changes in documentation.
+- **Oct, 24, 2013**: Found a bug in the order of loading snippets file.
+
+- **Jun 5, 2013**: Changes in documentation.
   Typo in internal variables.
   Added support for different character codes.
-* **May 24, 2013**: First release.
+- **May 24, 2013**: First release.
 
 TODO
 ----
