@@ -209,7 +209,8 @@ fun s:ConvertEncoding(list)
 
   if has("multi_byte")
     let l:fenc = getbufvar("%", "&fenc")
-    if l:fenc != "" && l:fenc !=? "utf-8" && &encoding !=? "utf-8"
+    if l:fenc != "" && (l:fenc !=? "utf-8" || &encoding !=? "utf-8")
+"      call s:ShowMsg('warning', 'ConvertEncoding() to '.l:fenc);
       let l:idx = 0
       while l:idx < len(a:list)
         let a:list[l:idx] = iconv(a:list[l:idx], "utf-8", l:fenc)
