@@ -34,6 +34,9 @@ let s:atpl_ConstMacro   = '<{@\(\w\+\)@}>'
 let s:atpl_SubstMacro   = '<{\$\(\w\+\)\$}>'
 let s:atpl_EvalMacro    = '<{#\([^}]\+\)#}>'
 let s:atpl_IncludeMacro = '<{<\([^>]\+\)>}>'
+let s:atpl_ReplacementStart = '\[\{2}'
+let s:atpl_ReplacementEnd   = '\]\{2}'
+let s:atpl_debug        = 1               " comment it to disable debug.
 
 " Default dictionary {{{2
 let s:atpl_DefaultList = 
@@ -57,11 +60,6 @@ if !exists(":Template")
   command -nargs=1 -complete=custom,s:TemplateComplete Template :call s:AtplLoadTemplate(<q-args>)
 endif
 
-" :Apply name | To apply a snippet {{{2
-if !exists(":Apply")
-  command -nargs=1 Apply :call s:AtplApplySnippet('<args>')
-endif
-
 " Key mappings. Only if g:atpl_SnippetMap exists. {{{2
 if exists('g:atpl_SnippetMap')
   exec "inoremap <silent> ". g:atpl_SnippetMap ."  <C-O>:call <SID>ApplySnippet()<CR>"
@@ -77,7 +75,7 @@ endif
 " =============================================================================
 func s:AtplLoadTemplate(name)
 
-  " Check if the path for find templates was set.
+  " Check if the path for templates was set.
   if !exists('g:atpl_TemplatePath') || strlen(g:atpl_TemplatePath) == 0
     call s:ShowMsg('error', "The 'g:atpl_TemplatePath' option must be set!")
     return
@@ -89,7 +87,7 @@ func s:AtplLoadTemplate(name)
   " Loads the file and put it in a List
   let flist = s:LoadFile(a:name)
   if empty(flist)
-"""    call s:ShowMsg('error', "The file '". a:name ."' was not found!")
+    call s:ShowMsg('debug', "The file '". a:name ."' was not found!")
     return
   endif
 
@@ -106,7 +104,6 @@ func s:AtplLoadTemplate(name)
   let line_no = line(".")
   let line_cn = len(flist)
 
-  " In the current line of the buffer we will write the new code.
   " In the current line we write the first line of the template.
   call setline(line_no, flist[0])
 
@@ -188,7 +185,13 @@ endfunc
 " @returns Nothing.
 " ============================================================================
 func s:ShowMsg(type, msg)
-  if a:type ==? 'error' || a:type ==? 'debug'
+  if a:type ==? 'debug'
+    if exists('s:atpl_debug') && s:atpl_debug == 1
+      echohl ErrorMsg
+    else
+      return
+    endif
+  elseif a:type ==? 'error'
     echohl ErrorMsg
   elseif a:type ==? 'warning'
     echohl WarningMsg
@@ -516,6 +519,17 @@ function s:ProcessEvalMacro(text, pos)
 
 endfunction
 
+" s:ProcessReplacementLine(text, pos) {{{2
+" Process the v2 replacement block.
+" @param text The line of text to be processed.
+" @param pos The block start position.
+" @return The next line number to be processed.
+" =============================================================================
+function s:ProcessReplacementLine(text, pos)
+  let l:variable = '\$\(\i\w\*\)\>'
+  let l:evalable = '\$\$\(\i\w*\)\>'
+endfunction
+
 " s:LoadSnippetCode(name) {{{2
 " Search for a named snippet and load it.
 " @param name The snippet name.
@@ -729,4 +743,4 @@ endfunc
 let &cpo = s:saved_cpo
 unlet s:saved_cpo
 " }}}1
-" vim:ff=unix:ts=2:sw=2
+" vim:ff=unix:ts=2:sw=2:fdm=marker
