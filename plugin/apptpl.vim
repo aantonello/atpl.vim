@@ -36,7 +36,7 @@ let s:atpl_EvalMacro    = '<{#\([^}]\+\)#}>'
 let s:atpl_IncludeMacro = '<{<\([^>]\+\)>}>'
 let s:atpl_ReplacementStart = '\[\{2}'
 let s:atpl_ReplacementEnd   = '\]\{2}'
-let s:atpl_debug        = 1               " comment it to disable debug.
+" let s:atpl_debug        = 1               " comment it to disable debug.
 
 " Default dictionary {{{2
 let s:atpl_DefaultList = 
@@ -213,7 +213,7 @@ fun s:ConvertEncoding(list)
   if has("multi_byte")
     let l:fenc = getbufvar("%", "&fenc")
     if l:fenc != "" && (l:fenc !=? "utf-8" || &encoding !=? "utf-8")
-"      call s:ShowMsg('warning', 'ConvertEncoding() to '.l:fenc);
+      call s:ShowMsg('debug', 'ConvertEncoding() to '.l:fenc);
       let l:idx = 0
       while l:idx < len(a:list)
         let a:list[l:idx] = iconv(a:list[l:idx], "utf-8", l:fenc)
